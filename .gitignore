@@ -92,3 +92,5 @@ next-env.d.ts
 /.zscripts/
 /upload/
 /download/
+/worklog.md
+/realtime.log

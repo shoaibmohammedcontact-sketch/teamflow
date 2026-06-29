@@ -1,0 +1,71 @@
+# ---------------------------------------------------------------------------
+# Docker build context ignore list — keeps the build context small and
+# prevents secrets / dev artefacts from leaking into image layers.
+# ---------------------------------------------------------------------------
+
+# VCS
+.git
+.gitignore
+.gitattributes
+
+# Dependencies (reinstalled inside the image)
+node_modules
+**/node_modules
+
+# Build outputs
+.next
+out
+build
+dist
+**/.turbo
+
+# Logs
+*.log
+dev.log
+server.log
+realtime.log
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Env files (NEVER bake secrets into images)
+.env
+.env.*
+!.env.example
+
+# Database
+db/*.db
+db/*.db-journal
+db/*.db-wal
+db/*.db-shm
+
+# IDE / OS
+.vscode
+.idea
+.DS_Store
+*.swp
+
+# Docker
+Dockerfile
+Dockerfile.*
+docker-compose*.yml
+.dockerignore
+
+# Tests / coverage
+coverage
+.nyc_output
+
+# Docs / sandbox-only
+README.md
+CONTRIBUTING.md
+LICENSE
+screenshots
+scripts
+.github
+Caddyfile
+worklog.md
+skills
+.zscripts
+upload
+download
+examples

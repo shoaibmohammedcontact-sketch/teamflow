@@ -1,0 +1,90 @@
+# ---------------------------------------------------------------------------
+# TeamFlow — Docker Compose (local production-like stack)
+#
+# Bring up the full stack:
+#   docker compose up --build
+#
+# Tear down (and wipe volumes):
+#   docker compose down -v
+#
+# Services:
+#   web       — Next.js app on :3000 (built from Dockerfile)
+#   realtime  — Socket.IO service on :3003 (built from Dockerfile.realtime)
+#   postgres  — Postgres 16 (replaces SQLite for production-like setup)
+#
+# The web service runs `prisma db push` on startup to sync the schema,
+# then seeds if the database is empty.
+# ---------------------------------------------------------------------------
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: teamflow-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: teamflow
+      POSTGRES_PASSWORD: teamflow_dev
+      POSTGRES_DB: teamflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teamflow -d teamflow"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  realtime:
+    build:
+      context: .
+      dockerfile: Dockerfile.realtime
+    container_name: teamflow-realtime
+    restart: unless-stopped
+    ports:
+      - "3003:3003"
+    environment:
+      NODE_ENV: production
+      PORT: 3003
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://localhost:3003/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 5s
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: teamflow-web
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      realtime:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      DATABASE_URL: "postgresql://teamflow:teamflow_dev@postgres:5432/teamflow?schema=public"
+      NEXTAUTH_SECRET: "${NEXTAUTH_SECRET:-change-me-in-production}"
+      NEXTAUTH_URL: "${NEXTAUTH_URL:-http://localhost:3000}"
+      REALTIME_URL: "http://realtime:3003"
+    # Run prisma db push on every start so schema is always in sync.
+    # NOTE: for a real prod deploy, swap this for `prisma migrate deploy`.
+    command: >
+      sh -c "
+        bunx prisma db push --skip-generate &&
+        bunx prisma db seed &&
+        bun server.js
+      "
+    healthcheck:
+      test: ["CMD-SHELL", "bun -e \"fetch('http://localhost:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\""]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+volumes:
+  postgres_data:

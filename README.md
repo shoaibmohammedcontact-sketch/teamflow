@@ -9,6 +9,8 @@
 [![Socket.IO](https://img.shields.io/badge/Socket.IO-realtime-010101)](https://socket.io/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)](./LICENSE)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](./CONTRIBUTING.md)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF)](./.github/workflows/ci.yml)
+[![Docker](https://img.shields.io/badge/Docker-compose-2496ED)](./docker-compose.yml)
 
 | | |
 |---|---|
@@ -339,9 +341,70 @@ The seed creates the **Northwind Labs** organization with 7 members, 3 teams, 3 
 | `bun run dev` | Start Next.js dev server (port 3000) |
 | `bun run realtime` | Start Socket.IO mini-service (port 3003, hot-reload) |
 | `bun run lint` | ESLint |
+| `bun run typecheck` | TypeScript compiler (no emit) |
+| `bun run format` | Prettier |
 | `bun run db:push` | Push Prisma schema to DB |
 | `bun run db:seed` | Seed demo data |
 | `bun run db:generate` | Regenerate Prisma client |
+
+### Using Make (optional)
+
+A `Makefile` wraps the common commands for convenience:
+
+```bash
+make help        # list all targets
+make install     # bun install + prisma generate
+make db          # db:push + db:seed
+make dev         # start Next.js (:3000)
+make realtime    # start Socket.IO (:3003, separate terminal)
+make lint        # eslint
+make typecheck   # tsc --noEmit
+make up          # docker compose up (full stack with Postgres)
+make down        # docker compose down
+```
+
+---
+
+## 🐳 Docker (full stack)
+
+Spin up the complete production-like stack — Next.js web + Socket.IO realtime + Postgres — with one command:
+
+```bash
+# 1. Set required secrets (only NEXTAUTH_SECRET is mandatory)
+export NEXTAUTH_SECRET="$(openssl rand -base64 32)"
+export NEXTAUTH_URL="http://localhost:3000"
+
+# 2. Build + start everything
+docker compose up --build
+
+# 3. Visit http://localhost:3000  (login: avery@teamflow.dev / password123)
+```
+
+| Service   | Image / build        | Port | Healthcheck |
+|-----------|----------------------|------|-------------|
+| `web`     | `Dockerfile`         | 3000 | `GET /` → 200 |
+| `realtime`| `Dockerfile.realtime`| 3003 | `GET /health` → 200 |
+| `postgres`| `postgres:16-alpine` | 5432 | `pg_isready` |
+
+The web container runs `prisma db push && prisma db seed` on startup so the schema is always in sync and demo data is present. For a real production deploy, swap `prisma db push` for `prisma migrate deploy` and remove the seed step.
+
+```bash
+docker compose down -v   # tear down + wipe the Postgres volume
+```
+
+See [`docker-compose.yml`](./docker-compose.yml) for the full definition.
+
+---
+
+## ✅ Continuous Integration
+
+GitHub Actions runs on every push to `main` and on every PR:
+
+1. **Lint** — `bun run lint` (0 errors required)
+2. **Typecheck** — `bun run typecheck`
+3. **Build** — `bun run build` (standalone output) + upload as artefact
+
+The workflow lives at [`.github/workflows/ci.yml`](./.github/workflows/ci.yml). PRs that fail any check will show a red ✗ on GitHub — merge blocking is left to branch protection (enable in repo Settings → Branches → Protect `main`).
 
 ---
 
@@ -349,6 +412,11 @@ The seed creates the **Northwind Labs** organization with 7 members, 3 teams, 3 
 
 ```
 .
+├── .github/
+│   ├── workflows/ci.yml      # GitHub Actions: lint + typecheck + build
+│   ├── ISSUE_TEMPLATE/        # bug_report.md, feature_request.md
+│   ├── PULL_REQUEST_TEMPLATE.md
+│   └── FUNDING.yml
 ├── prisma/
 │   ├── schema.prisma         # 17-model normalized schema
 │   └── seed.ts               # realistic demo data
@@ -370,6 +438,12 @@ The seed creates the **Northwind Labs** organization with 7 members, 3 teams, 3 
 │   ├── lib/                  # auth, permissions, api, cache, ...
 │   └── stores/               # Zustand app store
 ├── screenshots/              # UI screenshots
+├── scripts/push-to-github.sh # one-shot repo creation + push
+├── Dockerfile                # Next.js web (standalone, multi-stage)
+├── Dockerfile.realtime       # Socket.IO mini-service
+├── docker-compose.yml        # full stack: web + realtime + postgres
+├── .dockerignore
+├── Makefile                  # common dev commands
 ├── .env.example              # environment variable template
 ├── .editorconfig             # editor formatting rules
 ├── .nvmrc                    # Node version pin

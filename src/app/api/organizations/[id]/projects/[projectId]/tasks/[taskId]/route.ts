@@ -10,8 +10,8 @@ import { z } from "zod"
 const patchSchema = z.object({
   title: z.string().min(1).max(200).optional(),
   description: z.string().max(5000).optional().or(z.literal("")),
-  priority: z.enum(TASK_PRIORITIES as [string, ...string[]]).optional(),
-  status: z.enum(TASK_STATUSES as [string, ...string[]]).optional(),
+  priority: z.enum([...TASK_PRIORITIES] as [string, ...string[]]).optional(),
+  status: z.enum([...TASK_STATUSES] as [string, ...string[]]).optional(),
   dueDate: z.string().datetime().optional().nullable(),
   assigneeId: z.string().optional().nullable(),
 })
@@ -91,7 +91,7 @@ export const PATCH = apiHandler(async (req, ctx) => {
 
 // Reorder / move between columns (kanban drag & drop)
 const moveSchema = z.object({
-  toStatus: z.enum(TASK_STATUSES as [string, ...string[]]),
+  toStatus: z.enum([...TASK_STATUSES] as [string, ...string[]]),
   toPosition: z.number().int().min(0),
 })
 

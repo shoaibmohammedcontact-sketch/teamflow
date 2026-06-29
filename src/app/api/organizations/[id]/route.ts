@@ -19,7 +19,7 @@ export const GET = apiHandler(async (_req, ctx) => {
   const stats = await db.organization.findUnique({
     where: { id },
     include: {
-      _count: { select: { members: true, projects: true, teams: true, tasks: false } },
+      _count: { select: { members: true, projects: true, teams: true } },
     },
   })
 

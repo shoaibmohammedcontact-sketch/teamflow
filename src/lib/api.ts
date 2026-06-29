@@ -86,6 +86,6 @@ export async function parseBody<T>(req: Request, schema: { safeParse: (d: unknow
   if (!parsed.success) {
     return { ok: false, response: fail("Invalid input", 400, "validation_error", parsed.error?.flatten()) }
   }
-  return { ok: true, data: parsed.data }
+  return { ok: true, data: parsed.data as T }
 }
 

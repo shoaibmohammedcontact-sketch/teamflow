@@ -10,8 +10,8 @@ import { z } from "zod"
 const createSchema = z.object({
   title: z.string().min(1).max(200),
   description: z.string().max(5000).optional().or(z.literal("")),
-  priority: z.enum(TASK_PRIORITIES as [string, ...string[]]).default("medium"),
-  status: z.enum(TASK_STATUSES as [string, ...string[]]).default("todo"),
+  priority: z.enum([...TASK_PRIORITIES] as [string, ...string[]]).default("medium"),
+  status: z.enum([...TASK_STATUSES] as [string, ...string[]]).default("todo"),
   dueDate: z.string().datetime().optional(),
   assigneeId: z.string().optional().nullable(),
   labelIds: z.array(z.string()).optional(),

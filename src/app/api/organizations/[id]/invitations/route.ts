@@ -9,7 +9,7 @@ import { z } from "zod"
 
 const inviteSchema = z.object({
   email: z.string().email(),
-  role: z.enum(ORG_ROLES as [string, ...string[]]).default("member"),
+  role: z.enum([...ORG_ROLES] as [string, ...string[]]).default("member"),
   teamId: z.string().optional(),
 })
 

@@ -9,8 +9,8 @@ import { z } from "zod"
 const createSchema = z.object({
   name: z.string().min(2).max(120),
   description: z.string().max(2000).optional().or(z.literal("")),
-  status: z.enum(PROJECT_STATUSES as [string, ...string[]]).default("active"),
-  visibility: z.enum(PROJECT_VISIBILITY as [string, ...string[]]).default("internal"),
+  status: z.enum([...PROJECT_STATUSES] as [string, ...string[]]).default("active"),
+  visibility: z.enum([...PROJECT_VISIBILITY] as [string, ...string[]]).default("internal"),
   teamId: z.string().optional(),
   dueDate: z.string().datetime().optional(),
 })

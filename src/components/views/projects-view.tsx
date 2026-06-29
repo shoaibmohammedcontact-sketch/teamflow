@@ -86,8 +86,8 @@ const SORTS = [
 const schema = z.object({
   name: z.string().min(2, "Name is too short").max(120),
   description: z.string().max(2000).optional().or(z.literal("")),
-  status: z.enum(PROJECT_STATUSES as [string, ...string[]]),
-  visibility: z.enum(PROJECT_VISIBILITY as [string, ...string[]]),
+  status: z.enum([...PROJECT_STATUSES] as [string, ...string[]]),
+  visibility: z.enum([...PROJECT_VISIBILITY] as [string, ...string[]]),
   teamId: z.string().optional().or(z.literal("")),
   dueDate: z.string().optional().or(z.literal("")),
 })

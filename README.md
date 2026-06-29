@@ -12,8 +12,8 @@
 
 | | |
 |---|---|
-| **Live Demo** | _replace this with your deployed URL (e.g. Vercel)_ |
-| **Repository** | _replace this with your GitHub repo URL_ |
+| **Repository** | [github.com/shoaibmohammedcontact-sketch/teamflow](https://github.com/shoaibmohammedcontact-sketch/teamflow) |
+| **Live Demo** | _coming soon — see Deployment section_ |
 | **Demo Login** | `avery@teamflow.dev` / `password123` |
 | **Stack** | Next.js 16 · React 19 · TypeScript 5 · Prisma · SQLite · Tailwind v4 · shadcn/ui · Socket.IO · Recharts · Zustand · TanStack Query |
 
